@@ -1,0 +1,5 @@
+usina,geracao_min,geracao_max,custo
+T1,0,100,4
+T2,0,200,3.5
+T3,0,300,3
+T4,0,500,3.25

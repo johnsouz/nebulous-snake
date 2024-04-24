@@ -1,0 +1,4 @@
+usina,turbinado_min,turbinado_max,reservatorio_min,reservatorio_max,conversao_hidrica
+A,10.00,80.00,100.00,600.00,0.94
+B,800.00,2500.00,2500.00,16000.00,1
+C,250.00,820.00,300.00,5500.00,0.98

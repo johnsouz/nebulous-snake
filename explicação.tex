@@ -1,0 +1,130 @@
+\documentclass[12pt]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[brazil]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm,]{geometry}
+
+% Useful packages
+\usepackage{lmodern}
+\usepackage{mathtools, amsmath, amssymb, amsthm, tabularx}
+
+
+\begin{document}
+% \maketitle
+
+\section*{Formulação}
+
+Uma formulação de Programação Linear que modela um sistema de distribuição hipotético composto por usinas hidroelétricas e termoelétricas, que será operado pelos próximos meses. O modelo propõe como que cada usina, em cada mês, deverá operar a fim de suprir a demanda do sistema de modo a minimizar os custos de geração.
+
+Os dados do modelo estão situados na pasta \textrm{db}, em que o arquivo:
+
+\begin{description}
+	\item[afluencia.csv] Contem a afluência de cada usina hidroelétrica em cada mês de operação
+	\item[termos.csv] Contem os parâmetros das usinas termoelétricas
+	\item[hidro.csv] Contem os parâmetros das usinas hidroelétricas
+\end{description}
+
+
+\section*{Modelo matemático}
+
+\subsection*{Usinas hidráulicas}
+
+As Hidroelétricas terão o objetivo de ser mais eficiente em questão a retenção de água. Possuem um reservatório $ A_{ih} $ com capacidade mínima $ \text{R}^\text{min}_h $ e máxima $ \text{R}^\text{max}_h $ especificados e existirá uma afluência $ \text{C}_{ih} $ determinística. A defluência, será dividida em duas variáveis de decisão, serão, \textit{Volume Vertido} e \textit{Volume Turbinado}, o restante ficará \textit{Armazenado} para utilização nos próximos meses. Vertimento será penalizado juntamente com o turbinamento em função do nível atual do reservatório.
+
+\subsection*{Conservação hidráulica}
+
+O nível do reservatório depende do nível armazenado do mês anterior, portanto, para $ i \in \textbf{I}, \forall i > 1 $
+
+\[V_{ih} + T_{ih} + A_{ih} = A_{i-1,h} + C_{ih}
+\tag{Conservação hidraulica}\]
+
+Quando $i = 1$, isto é, no primeiro mês, defini-se o nível inicial dos reservatórios.
+
+\[ V_{ih} + T_{ih} + A_{ih} = R^\textrm{inicial}_{h} + C_{ih}
+\tag{Condição inicial}\]
+
+E quando $i = |\mathrm{I}|$, isto é, no ultimo mês, defini-se o nível mínimo dos reservatórios.
+
+\[A_{ih} \geq R^\textrm{final}_h
+\tag{Condição final}\]
+
+\subsection*{Geração}
+
+A Geração da hidrelétrica é ponderada pela \textit{Conversão hidráulica} $ \mu_h $
+
+\[ G_{ih} = \mu_h V_{turb} \]
+
+\subsection*{Custo}
+
+Por simplificação, o custo do uso da água pode se resumir a zero. Para termos o melhor controle dos níveis dos reservatórios de modo geral, utiliza-se uma penalização no custo, definida como uma proporção linear entre o reservatário no nível minimo e no reservatório cheio.
+
+\[ \ell_{ih} \coloneqq \frac{A_{ih}-R^{max}_{h}}{R^{min}_{h} - R^{max}_{h}} \tag{Penalização do Reservatório} \]
+
+Exemplificando, quando o reservatório estiver no nível máximo, \[A_{ih} = R^\text{max}_{ih} \implies \ell_{ih} = 0\]
+
+Analogamente quando o reservatório estiver no nível minimo, \[A_{ih} = R^\text{min}_{ih} \implies \ell_{ih} = 1\]
+
+\subsection*{Usinas Térmicas}
+
+As usinas térmicas são aquelas que utilizam-se da conversão de uma fonte de calor (geralmente combustíveis fósseis) para a geração de energia elétrica. No modelo são parametrizadas pelas suas capacidades operacionais $ G_{t}^{min} \leq G_{it} \leq G_{t}^{max} $ e o custo do combustível $ \gamma_t $
+
+\subsection*{Custo}
+
+Baseia-se na quantidade de combustível usado para gerar tal demanda, modelado pela contante do \textit{Custo da geração térmica} $\gamma_t$
+
+\[ C_{it} = \gamma_t G_{it} \]
+
+\pagebreak
+
+\subsection*{Conjuntos}
+\begin{tabular}{ll}
+	$\textbf{I}$ & Conjunto dos meses                 \\
+	$\textbf{H}$ & Conjunto das usinas hidroelétricas \\
+	$\textbf{T}$ & Conjunto das usinas termoelétricas
+\end{tabular}
+
+\subsection*{Parametros}
+\begin{tabularx}{\linewidth}{llX}
+	\textbf{M}               & $\textbf{M} \in \mathbb{R}$         & Big-M                                                                             \\
+	$R^\textrm{inicial}_{h}$ & $h \in \textbf{H}$                  & Volume do reservatório da usina $h$ no primeiro mês $(\textrm{m}^{3})$            \\
+	$R^\textrm{final}_{h}$   & $h \in \textbf{H}$                  & Volume do reservatório da usina $h$ no ultimo mês $(\textrm{m}^{3})$              \\
+	$C_{ih}$                 & $i \in \textbf{I},h \in \textbf{H}$ & Afluência no reservatório da usina $h$ no mês $i$ $(\textrm{m}^{3})$              \\
+	$\mu_h$                  & $h \in \textbf{H}$                  & Fator de conversão hidráulica $\left( \textrm{MWh} \cdot \textrm{m}^{-3} \right)$ \\
+	$\gamma_t$               & $t \in \textbf{T}$                  & Custo da geração térmica $( \$ \cdot \textrm{MWh}^{-1} )$                         \\
+	$D_i$                    & $i \in \textbf{I}$                  & Demanda de energia do mês $i$ $(\textrm{MWh})$
+\end{tabularx}
+
+\subsection*{Variáveis}
+\begin{tabularx}{\linewidth}{llX}
+	$V_{ih}$ & $i \in \textbf{I},h \in \textbf{H}$ & Volume vertido da usina $h$ no mês $i$ $(\textrm{m}^{3})$                  \\
+	$T_{ih}$ & $i \in \textbf{I},h \in \textbf{H}$ & Volume turbinado da usina $h$ no mês $i$ $(\textrm{m}^{3})$                \\
+	$A_{ih}$ & $i \in \textbf{I},h \in \textbf{H}$ & Volume restante no reservatório da usina $h$ no mês $i$ $(\textrm{m}^{3})$ \\
+	$D^*_i$  & $i \in \textbf{I}$                  & Deficit de energia do mês $i$ $(\textrm{MWh})$                             \\
+	$G_{it}$ & $i \in \textbf{I},t \in \textbf{T}$ & Geração térmica da usina $t$ no mês $i$ $(\textrm{MWh})$
+\end{tabularx}
+
+\newcommand{\fob}{\multicolumn{5}{l}
+{$
+\displaystyle\sum_{i \in \textbf{I}} \textbf{M} D^*_i +
+\displaystyle\sum_{i \in \textbf{I} \atop h \in \textbf{H}} (\textbf{M} V_{ih} + \ell_{ih}) +
+\displaystyle\sum_{i \in \textbf{I} \atop t \in \textbf{T}} \gamma_t G_{it}
+$}}
+
+\begin{align*}
+	\min        &  & \fob                          &                                                      &                                    &                         \\
+	\text{s.a.} &  & V_{ih} + T_{ih} + A_{ih}      & = R^\textrm{inicial}_{h} + C_{ih}                    & i \in \textbf{I} \cap \{1\}, h     & \in \textbf{H} \tag{H1} \\
+	&  & V_{ih} + T_{ih} + A_{ih}      & = A_{i-1,h} + C_{ih}                                 & i \in \textbf{I}\setminus \{1\}, h & \in \textbf{H} \tag{H2} \\
+	&  & A_{ih}                        & \geq R^\textrm{final}_h                              & i = |\textbf{I}|,h                 & \in \textbf{H} \tag{H3} \\
+	&  & \mu_h T_{ih} + G_{it} + D^*_i & = D_i                                                & i \in \textbf{I}, h \in H, t       & \in \textbf{T} \tag{P1} \\
+	&  & V_{ih}                        & \geq 0                                               & i \in \textbf{I}, h                & \in \textbf{H} \tag{B1} \\
+	&  & T_{ih}                        & \in \left[ T^\textrm{min}_h,T^\textrm{max}_h \right] & i \in \textbf{I}, h                & \in \textbf{H} \tag{B2} \\
+	&  & A_{ih}                        & \in \left[ R^\textrm{min}_h,R^\textrm{max}_h \right] & i \in \textbf{I}, h                & \in \textbf{H} \tag{B3} \\
+	&  & D^*_i                         & \geq 0                                               & i                                  & \in \textbf{I} \tag{B4} \\
+	&  & G_{it}                        & \in \left[ G^\textrm{min}_t,G^\textrm{max}_t \right] & i \in \textbf{I}, t                & \in \textbf{T} \tag{B5}
+\end{align*}
+
+\end{document}
